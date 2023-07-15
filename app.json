@@ -1,11 +1,19 @@
 {
   "expo": {
-    "name": "with-typescript",
-    "slug": "with-typescript",
+    "name": "AppRW",
+    "slug": "AppRW",
     "version": "1.0.0",
-    "assetBundlePatterns": [
-      "**/*"
-    ]
+    "assetBundlePatterns": ["**/*"],
+    "extra": {
+      "eas": {
+        "projectId": "71cb12b3-2739-4224-9789-ee42a73ddcbb"
+      }
+    },
+    "plugins": ["expo-router"],
+    "scheme": "myapp",
+    "web": {
+      "bundler": "metro"
+    }
   },
-  "name": "with-typescript"
+  "name": "AppRW"
 }
