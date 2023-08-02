@@ -1,4 +1,4 @@
-import { View, Text, FlatList } from 'react-native';
+import { View, Text } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { PostView } from '../../src/components/postView/PostView';
@@ -7,10 +7,14 @@ import { useEffect, useState } from 'react';
 import { Game } from '../../services/gameServices';
 
 import { getRandomInt } from '../../src/helpers/func';
+import { FlatList } from 'react-native-gesture-handler';
+import { setDeviceDimensions } from '../../redux/slices/generalSlice';
 
 export const Home = () => {
   const count = useSelector((state: RootState) => state.home.value);
+  const dimensions = useSelector((state: RootState) => state.general.deviceDimensions);
   const dispatch = useDispatch();
+
   const [games, setGames] = useState([]);
 
   const getGames = async () => {
@@ -29,8 +33,6 @@ export const Home = () => {
   }, []);
 
   const CustPostView = (item: any) => {
-    console.log(item);
-
     return (
       <PostView
         user={'username'}
@@ -44,12 +46,11 @@ export const Home = () => {
   };
 
   return (
-    <>
-      <FlatList
-        data={games}
-        renderItem={({ item }) => <CustPostView item={item} />}
-        keyExtractor={(item) => item.listId}
-      />
-    </>
+    <FlatList
+      data={games}
+      renderItem={({ item }) => <CustPostView item={item} />}
+      keyExtractor={(item) => item.listId}
+      nestedScrollEnabled
+    />
   );
 };
