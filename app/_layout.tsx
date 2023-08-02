@@ -12,8 +12,11 @@ import { setDeviceDimensions } from '../redux/slices/generalSlice';
 import { GeneralState } from '../src/models/models';
 import { Animated } from 'react-native';
 
-const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
+const windowWidth = Dimensions.get('screen').width;
+const windowHeight = Dimensions.get('screen').height;
+
+console.log('windowWidth: ', windowWidth);
+console.log('windowHeight: ', windowHeight);
 
 export default function App() {
   const [generalState, setGeneralState] = useState<GeneralState>({
@@ -23,10 +26,6 @@ export default function App() {
     },
     menuOpen: false,
   });
-
-  useEffect(() => {
-    console.log(generalState);
-  }, [generalState]);
 
   const getData = async () => {
     const data = await storage.getData('test');
@@ -40,9 +39,6 @@ export default function App() {
   ]);
 
   const closeMenu = () => {
-    console.log('close menu');
-    console.log(generalState);
-
     setGeneralState({
       ...generalState,
       menuOpen: false,
@@ -68,18 +64,18 @@ export default function App() {
         </View>
 
         <View style={styles.content}>
-          <Pressable onPress={closeMenu}>
-            <ScrollView>
+          <View style={styles.scrollable}>
+            <Pressable onPress={closeMenu} style={{ maxHeight: '100%', maxWidth: '100%' }}>
               <Home />
-            </ScrollView>
-          </Pressable>
-        </View>
+            </Pressable>
+          </View>
 
-        <BottomNav
-          generalState={generalState}
-          setGeneralState={setGeneralState}
-          style={styles.bottom}
-        />
+          <BottomNav
+            generalState={generalState}
+            setGeneralState={setGeneralState}
+            style={styles.bottom}
+          />
+        </View>
       </SafeAreaView>
     </Provider>
   );
@@ -87,26 +83,29 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    height: windowHeight,
-    width: windowWidth,
+    maxHeight: windowHeight,
+    maxWidth: windowWidth,
     display: 'flex',
     flexDirection: 'row',
   },
   content: {
     width: '100%',
+    height: '100%',
+  },
+  scrollable: {
     maxHeight: '92%',
   },
   bottom: {
-    position: 'absolute',
-    bottom: 0,
     width: '100%',
     height: '8%',
+    position: 'absolute',
   },
   sideMenu: {
     height: '100%',
     width: '65%',
     backgroundColor: '#fff',
     position: 'absolute',
+
     left: 0,
     top: 0,
     zIndex: 100,
