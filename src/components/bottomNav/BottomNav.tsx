@@ -24,7 +24,7 @@ export const BottomNav = (props: BottomNavProps) => {
       ...props.style,
     },
     buttonContainer: {
-      minWidth: props.generalState.deviceDimensions.width / 5,
+      flex: 1,
       height: '100%',
       display: 'flex',
       justifyContent: 'center',

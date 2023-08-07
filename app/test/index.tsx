@@ -7,3 +7,5 @@ export const Test = () => {
     </View>
   );
 };
+
+export default Test;

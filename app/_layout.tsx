@@ -1,42 +1,94 @@
 import React, { useEffect, useState } from 'react';
 import { Home } from './home/home';
-import { View, StyleSheet, ScrollView, Dimensions, Pressable } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, Pressable, BackHandler } from 'react-native';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '../redux/store';
 import storage from '../storage/storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import 'react-native-gesture-handler';
-import { Test } from './test/Test';
+import { Test } from './test';
 import { BottomNav } from '../src/components/bottomNav/BottomNav';
 import { setDeviceDimensions } from '../redux/slices/generalSlice';
-import { GeneralState } from '../src/models/models';
+import { GeneralState, Post } from '../src/models/models';
 import { Animated } from 'react-native';
-
-const windowWidth = Dimensions.get('screen').width;
-const windowHeight = Dimensions.get('screen').height;
-
-console.log('windowWidth: ', windowWidth);
-console.log('windowHeight: ', windowHeight);
+import { Menu } from '../src/components/menu/Menu';
+import { login } from '../src/helpers/firebase';
+import { fsGetData, getUsers, postData } from '../storage/fireStore';
+import { Stack } from 'expo-router';
+import { Login } from './login/login';
 
 export default function App() {
   const [generalState, setGeneralState] = useState<GeneralState>({
+    page: 'home',
     deviceDimensions: {
-      width: windowWidth,
-      height: windowHeight,
+      width: 2,
+      height: 2,
     },
     menuOpen: false,
+    getData: undefined,
+    posts: [],
+  });
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  BackHandler.addEventListener('hardwareBackPress', function () {
+    if (generalState.menuOpen) {
+      closeMenu();
+      return true;
+    }
+    return false;
   });
 
   const getData = async () => {
-    const data = await storage.getData('test');
-  };
+    await login();
 
-  const sideMenuStyle = StyleSheet.create([
-    {
-      ...styles.sideMenu,
-      display: generalState.menuOpen ? 'flex' : 'none',
-    },
-  ]);
+    await getUsers().then((users) => {
+      users.forEach((user) => {
+        console.log(user.data());
+      });
+    });
+
+    const storedKeyExist = await storage.doesStoredKeyExist('posts');
+
+    if (!storedKeyExist) {
+      console.log('no stored key');
+
+      await fsGetData('posts').then(async (posts) => {
+        const p = posts.docs.map((post) => {
+          return {
+            postId: post.id,
+            ...post.data(),
+          } as Post;
+        });
+
+        await storage.storeData('posts', p);
+        setPosts(p as Post[]);
+      });
+    } else {
+      console.log('stored key');
+
+      const posts = await storage.getStoredData('posts');
+
+      if (posts.length !== 0) {
+        console.log('using stored data');
+        console.log(posts);
+
+        setPosts(posts as Post[]);
+      } else {
+        await storage.removeStoredData('posts');
+        getData();
+      }
+    }
+
+    setGeneralState({
+      ...generalState,
+      deviceDimensions: {
+        width: 2,
+        height: 2,
+      },
+      getData: getData,
+      posts: posts,
+    });
+  };
 
   const closeMenu = () => {
     setGeneralState({
@@ -46,68 +98,57 @@ export default function App() {
   };
 
   useEffect(() => {
-    setGeneralState({
-      ...generalState,
-      deviceDimensions: {
-        width: windowWidth,
-        height: windowHeight,
-      },
-    });
+    console.log('layout use effect');
+
     getData();
   }, []);
 
+  useEffect(() => {
+    console.log(generalState);
+  }, [generalState]);
+
   return (
     <Provider store={store}>
-      <SafeAreaView style={styles.container}>
-        <View style={sideMenuStyle[0]}>
-          <Test />
-        </View>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <Menu generalState={generalState} setGeneralState={setGeneralState} />
 
-        <View style={styles.content}>
           <View style={styles.scrollable}>
-            <Pressable onPress={closeMenu} style={{ maxHeight: '100%', maxWidth: '100%' }}>
-              <Home />
-            </Pressable>
-          </View>
+            {generalState.page === 'home' && (
+              <Home generalState={generalState} setGeneralState={setGeneralState} />
+            )}
+            {generalState.page === 'login' && (
+              <Login generalState={generalState} setGeneralState={setGeneralState} />
+            )}
 
-          <BottomNav
-            generalState={generalState}
-            setGeneralState={setGeneralState}
-            style={styles.bottom}
-          />
-        </View>
-      </SafeAreaView>
+            <BottomNav
+              generalState={generalState}
+              setGeneralState={setGeneralState}
+              style={styles.bottom}
+            />
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Provider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    maxHeight: windowHeight,
-    maxWidth: windowWidth,
+    flex: 1,
     display: 'flex',
     flexDirection: 'row',
   },
   content: {
-    width: '100%',
     height: '100%',
   },
   scrollable: {
-    maxHeight: '92%',
+    maxHeight: '100%',
+    width: '100%',
   },
   bottom: {
     width: '100%',
     height: '8%',
     position: 'absolute',
-  },
-  sideMenu: {
-    height: '100%',
-    width: '65%',
-    backgroundColor: '#fff',
-    position: 'absolute',
-
-    left: 0,
-    top: 0,
-    zIndex: 100,
   },
 });

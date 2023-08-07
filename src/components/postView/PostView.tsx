@@ -1,5 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../typography/Text';
+import { Rating } from '@rneui/themed';
 
 type PostViewProps = {
   user: string;
@@ -16,7 +17,7 @@ export const PostView = (props: PostViewProps) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text type="title">{title}</Text>
-        <Text>{rating}</Text>
+        <Rating readonly startingValue={1} style={{ width: 20 }} />
       </View>
       <Text>{body}</Text>
 

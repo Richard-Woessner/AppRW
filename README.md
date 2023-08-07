@@ -7,4 +7,8 @@ To start
 ```
 npm i
 npm start
+
+npx react-native run-android
 ```
+
+
