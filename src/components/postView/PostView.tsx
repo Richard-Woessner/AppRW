@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { Text } from '../typography/Text';
-import { Rating } from '@rneui/themed';
+import { Icon } from '@rneui/themed';
 
 type PostViewProps = {
   user: string;
@@ -17,7 +17,7 @@ export const PostView = (props: PostViewProps) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text type="title">{title}</Text>
-        <Rating readonly startingValue={1} style={{ width: 20 }} />
+        <Rating value={rating} />
       </View>
       <Text>{body}</Text>
 
@@ -25,6 +25,22 @@ export const PostView = (props: PostViewProps) => {
         <Text>{user}</Text>
         <Text>{game}</Text>
       </View>
+    </View>
+  );
+};
+
+const Rating = (props: { value: number }) => {
+  const { value } = props;
+  const checks = [];
+  for (let i = 0; i < value; i++) {
+    checks.push(<Icon key={`key${i}`} name="check" size={20} color="green" />);
+  }
+
+  return (
+    <View style={{ display: 'flex', flexDirection: 'row' }}>
+      {checks.map((check) => {
+        return check;
+      })}
     </View>
   );
 };

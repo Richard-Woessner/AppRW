@@ -1,6 +1,10 @@
-## Welcome to my app
+# Welcome to my app(RW)
 
-IDK what this is going to be yet
+AppRW (Name up for change) is an app that will allow users to post and rate their favorite games.
+
+
+Built with React Native
+
 
 To start
 
@@ -8,7 +12,7 @@ To start
 npm i
 npm start
 
-npx react-native run-android
+npx expo
 ```
 
 

@@ -19,7 +19,7 @@ import { Login } from './login/login';
 
 export default function App() {
   const [generalState, setGeneralState] = useState<GeneralState>({
-    page: 'home',
+    page: undefined,
     deviceDimensions: {
       width: 2,
       height: 2,
@@ -34,6 +34,11 @@ export default function App() {
     if (generalState.menuOpen) {
       closeMenu();
       return true;
+    } else {
+      setGeneralState({
+        ...generalState,
+        page: 'home',
+      });
     }
     return false;
   });
@@ -49,44 +54,71 @@ export default function App() {
 
     const storedKeyExist = await storage.doesStoredKeyExist('posts');
 
-    if (!storedKeyExist) {
-      console.log('no stored key');
+    console.log('no stored key');
 
-      await fsGetData('posts').then(async (posts) => {
-        const p = posts.docs.map((post) => {
-          return {
-            postId: post.id,
-            ...post.data(),
-          } as Post;
-        });
+    const tempPosts: Post[] = [];
 
-        await storage.storeData('posts', p);
-        setPosts(p as Post[]);
+    await fsGetData('posts').then(async (posts) => {
+      const p = posts.docs.map((post) => {
+        return {
+          postId: post.id,
+          ...post.data(),
+        } as Post;
       });
-    } else {
-      console.log('stored key');
+      //todo fix issue with general state being set with state post
+      tempPosts.push(...p);
+      await storage.storeData('posts', p);
+      setGeneralState({
+        ...generalState,
+        posts: p as Post[],
+      });
+    });
 
-      const posts = await storage.getStoredData('posts');
+    // if (!storedKeyExist) {
+    //   console.log('no stored key');
 
-      if (posts.length !== 0) {
-        console.log('using stored data');
-        console.log(posts);
+    //   await fsGetData('posts').then(async (posts) => {
+    //     const p = posts.docs.map((post) => {
+    //       return {
+    //         postId: post.id,
+    //         ...post.data(),
+    //       } as Post;
+    //     });
 
-        setPosts(posts as Post[]);
-      } else {
-        await storage.removeStoredData('posts');
-        getData();
-      }
-    }
+    //     await storage.storeData('posts', p);
+    //     setGeneralState({
+    //       ...generalState,
+    //       posts: p as Post[],
+    //     });
+    //   });
+    // } else {
+    //   console.log('stored key');
+
+    //   const posts = await storage.getStoredData('posts');
+
+    //   if (posts.length !== 0) {
+    //     console.log('using stored data');
+    //     console.log(posts);
+
+    //     setGeneralState({
+    //       ...generalState,
+    //       posts: posts as Post[],
+    //     });
+    //   } else {
+    //     await storage.removeStoredData('posts');
+    //     await getData();
+    //   }
+    // }
 
     setGeneralState({
       ...generalState,
+      page: 'home',
       deviceDimensions: {
         width: 2,
         height: 2,
       },
       getData: getData,
-      posts: posts,
+      posts: tempPosts,
     });
   };
 
