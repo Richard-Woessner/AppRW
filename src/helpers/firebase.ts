@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { app } from '../../firebaseConfig';
+import { DisplayAlert } from './func';
 
 const auth = getAuth(app);
 
@@ -15,7 +16,7 @@ export const login = async () => {
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
-    console.error(errorCode, errorMessage);
+    console.log(errorCode, errorMessage);
     return errorCode;
   }
 };
@@ -27,7 +28,7 @@ export const signup = async (email: string, password: string) => {
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
-    console.error(errorCode, errorMessage);
+    console.log(errorCode, errorMessage);
     return errorCode;
   }
 };
@@ -39,7 +40,8 @@ export const signin = async (email: string, password: string) => {
   } catch (error) {
     const errorCode = error.code;
     const errorMessage = error.message;
-    console.error(errorCode, errorMessage);
+    console.log(errorCode, errorMessage);
+    //DisplayAlert('Error', errorMessage);
     return errorCode;
   }
 };

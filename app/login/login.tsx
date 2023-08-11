@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { GeneralState, User } from '../../src/models/models';
 import { useEffect, useState } from 'react';
 import { signin, signup } from '../../src/helpers/firebase';
 import { UserCredential } from 'firebase/auth';
-import { Button as ButtonElement, Input, Icon } from '@rneui/themed';
+import { Button as ButtonElement, Input, Icon, Tab, TabView } from '@rneui/themed';
+import { DisplayAlert } from '../../src/helpers/func';
 
 export interface LoginProps {
   generalState: GeneralState;
@@ -12,13 +13,29 @@ export interface LoginProps {
 
 export const Login = (props: LoginProps) => {
   const { generalState, setGeneralState } = props;
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [index, setIndex] = useState(0);
+  const [signInForm, setSignInForm] = useState<SignInForm>({
+    email: '',
+    password: '',
+  });
+  const [signUpForm, setSignUpForm] = useState<SignUpForm>({
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   const closeMenu = () => {
     setGeneralState({
       ...generalState,
       menuOpen: false,
+    });
+  };
+
+  const redirectHome = () => {
+    setGeneralState({
+      ...generalState,
+      menuOpen: false,
+      page: 'home',
     });
   };
 
@@ -33,6 +50,21 @@ export const Login = (props: LoginProps) => {
   };
 
   const signUp = () => {
+    const { email, password, confirmPassword } = signUpForm;
+
+    if (!email || !password || !confirmPassword) {
+      console.log('missing fields');
+      DisplayAlert({ title: 'Missing fields' });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      console.log('passwords do not match');
+      DisplayAlert({ title: 'Passwords do not match' });
+
+      return;
+    }
+
     signup(email, password)
       .then((user: UserCredential) => {
         console.log('user signed up');
@@ -43,9 +75,49 @@ export const Login = (props: LoginProps) => {
           displayName: u.displayName,
           email: u.email,
         });
+
+        DisplayAlert({ title: 'Thank you for signing up!' });
       })
       .catch((err) => {
         console.log(err);
+        DisplayAlert({
+          title: 'Error signing up',
+          message: 'Make sure you have the correct email and password',
+        });
+      });
+  };
+
+  const signIn = () => {
+    const { email, password } = signInForm;
+
+    if (!email || !password) {
+      console.log('missing fields');
+      DisplayAlert({ title: 'Missing fields' });
+      return;
+    }
+
+    signin(email, password)
+      .then((user: UserCredential) => {
+        console.log('user signed in');
+        console.log(user);
+
+        const u = user.user;
+        setUser({
+          accessToken: u.accessToken,
+          displayName: u.displayName,
+          email: u.email,
+        });
+
+        const name = user.user.displayName ? user.user.displayName : user.user.email.split('@')[0];
+
+        DisplayAlert({ title: `Hello ${name}`, onConfirm: redirectHome });
+        closeMenu();
+      })
+      .catch(() => {
+        DisplayAlert({
+          title: 'Error signing in',
+          message: 'Make sure you have the correct email and password',
+        });
       });
   };
 
@@ -53,27 +125,74 @@ export const Login = (props: LoginProps) => {
     if (generalState.user) {
       return;
     }
-
-    signin('richardwoesIII@gmail.com', 'password').then((user: UserCredential) => {
-      const u = user.user;
-      setUser({
-        accessToken: u.accessToken,
-        displayName: u.displayName,
-        email: u.email,
-      });
-    });
   }, []);
 
   return (
-    <Pressable onPress={closeMenu} style={{ height: '100%', width: '100%' }}>
-      <View style={styles.container}>
-        <Input placeholder="Email" leftIcon={<Icon name={'email'} size={24} color="black" />} />
-        <Input placeholder="Password" leftIcon={<Icon name={'lock'} size={24} color="black" />} />
+    <>
+      <Tab
+        value={index}
+        onChange={(e) => setIndex(e)}
+        indicatorStyle={{
+          backgroundColor: 'white',
+          height: 3,
+        }}
+        variant="primary"
+      >
+        <Tab.Item title="Login" titleStyle={{ fontSize: 12 }} />
+        <Tab.Item title="Sign Up" titleStyle={{ fontSize: 12 }} />
+      </Tab>
 
-        <Button title="Log in" type="solid" onPress={signUp} />
-        <Button title="Sign Up" type="outline" onPress={() => console.log('sign up')} />
-      </View>
-    </Pressable>
+      <TabView
+        value={index}
+        onChange={setIndex}
+        animationType="spring"
+        containerStyle={{ height: '100%', borderWidth: 1 }}
+      >
+        <TabView.Item style={styles.container}>
+          <View style={styles.container}>
+            <Input
+              placeholder="Email"
+              leftIcon={<Icon name={'email'} size={24} color="black" />}
+              value={signInForm.email}
+              onChangeText={(text) => setSignInForm({ ...signInForm, email: text })}
+            />
+            <Input
+              placeholder="Password"
+              leftIcon={<Icon name={'lock'} size={24} color="black" />}
+              value={signInForm.password}
+              onChangeText={(text) => setSignInForm({ ...signInForm, password: text })}
+            />
+
+            <Button title="Log in" type="solid" onPress={signIn} />
+          </View>
+        </TabView.Item>
+
+        <TabView.Item style={styles.container}>
+          <View style={styles.container}>
+            <Input
+              placeholder="Email"
+              leftIcon={<Icon name={'email'} size={24} color="black" />}
+              value={signUpForm.email}
+              onChangeText={(text) => setSignUpForm({ ...signUpForm, email: text })}
+            />
+            <Input
+              placeholder="Password"
+              leftIcon={<Icon name={'lock'} size={24} color="black" />}
+              value={signUpForm.password}
+              onChangeText={(text) => setSignUpForm({ ...signUpForm, password: text })}
+            />
+            <Input
+              placeholder="Confirm Password"
+              leftIcon={<Icon name={'lock'} size={24} color="black" />}
+              value={signUpForm.confirmPassword}
+              onChangeText={(text) => setSignUpForm({ ...signUpForm, confirmPassword: text })}
+            />
+
+            <Button title="Sign Up" type="outline" onPress={signUp} />
+          </View>
+        </TabView.Item>
+      </TabView>
+    </>
   );
 };
 
@@ -101,3 +220,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
+interface SignInForm {
+  email?: string;
+  password?: string;
+}
+
+interface SignUpForm {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}

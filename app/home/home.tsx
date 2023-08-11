@@ -10,6 +10,7 @@ import { getRandomInt } from '../../src/helpers/func';
 import { FlatList } from 'react-native-gesture-handler';
 import { setDeviceDimensions } from '../../redux/slices/generalSlice';
 import { GeneralState, Post } from '../../src/models/models';
+import { Tab, TabView } from '@rneui/themed';
 
 export interface HomeProps {
   generalState: GeneralState;
@@ -21,6 +22,7 @@ export const Home = (props: HomeProps) => {
   const { posts } = generalState;
   const count = useSelector((state: RootState) => state.home.value);
   const dispatch = useDispatch();
+  const [index, setIndex] = useState(0);
 
   const [games, setGames] = useState([]);
 
@@ -75,12 +77,37 @@ export const Home = (props: HomeProps) => {
   }
 
   return (
-    <FlatList
-      data={posts}
-      renderItem={({ item }) => <CustPostView item={item} />}
-      keyExtractor={(item) => item.postId}
-      nestedScrollEnabled
-    />
+    <>
+      <Tab
+        value={index}
+        onChange={(e) => setIndex(e)}
+        indicatorStyle={{
+          backgroundColor: 'white',
+          height: 3,
+        }}
+        variant="primary"
+      >
+        <Tab.Item title="Home" titleStyle={{ fontSize: 12 }} />
+        <Tab.Item title="Games" titleStyle={{ fontSize: 12 }} />
+      </Tab>
+
+      <TabView
+        value={index}
+        onChange={setIndex}
+        animationType="spring"
+        containerStyle={{ height: '100%', borderWidth: 1 }}
+      >
+        <TabView.Item>
+          <View style={styles.container}>
+            <FlatList
+              data={posts}
+              renderItem={({ item }) => <CustPostView item={item} />}
+              keyExtractor={(item) => item.postId}
+            />
+          </View>
+        </TabView.Item>
+      </TabView>
+    </>
   );
 };
 
@@ -88,7 +115,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
   content: {
     height: '100%',

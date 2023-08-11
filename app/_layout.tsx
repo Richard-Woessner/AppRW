@@ -58,21 +58,29 @@ export default function App() {
 
     const tempPosts: Post[] = [];
 
-    await fsGetData('posts').then(async (posts) => {
-      const p = posts.docs.map((post) => {
-        return {
-          postId: post.id,
-          ...post.data(),
-        } as Post;
+    await fsGetData('posts')
+      .then(async (posts) => {
+        const p = posts.docs.map((post) => {
+          console.log(post.data());
+
+          return {
+            postId: post.id,
+            ...post.data(),
+          } as Post;
+        });
+        //todo fix issue with general state being set with state post
+        console.log(p);
+
+        tempPosts.push(...p);
+        await storage.storeData('posts', p);
+        setGeneralState({
+          ...generalState,
+          posts: p as Post[],
+        });
+      })
+      .catch((err) => {
+        console.log(err);
       });
-      //todo fix issue with general state being set with state post
-      tempPosts.push(...p);
-      await storage.storeData('posts', p);
-      setGeneralState({
-        ...generalState,
-        posts: p as Post[],
-      });
-    });
 
     // if (!storedKeyExist) {
     //   console.log('no stored key');
