@@ -9,3 +9,7 @@ test('adds 1 + 2 to equal 3', () => {
 test('loginValidation', () => {
   expect(f.validateSignIn('teststst', 'teststst')).toBe(false);
 });
+
+test('signUpValidation', () => {
+  expect(f.validateSignUp('teststst', 'teststst', 'teststst')).toBe(false);
+});
