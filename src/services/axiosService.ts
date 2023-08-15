@@ -1,30 +1,27 @@
 import axiosStatic from 'axios';
-import storage from '../storage/storage';
-import config from '../config';
-
+import storage from './storage';
+import config from '../../config';
 
 export const axios = axiosStatic.create({
   baseURL: config.gamesApiUrl,
 });
 
-const getToken = async () => 'ryywi3voeljttxcq243iybirpt9ndp';//storage.getData('token');
+const getToken = async () => 'ryywi3voeljttxcq243iybirpt9ndp'; //storage.getData('token');
 
 (async function () {
   const authToken = await getToken();
   axios.defaults.headers.common.ClientId = config.clientId;
 
   console.log(authToken);
-  
+
   if (authToken === null) {
     console.log(1);
-    const { data } = await axios.post(`https://id.twitch.tv/oauth2/token?client_id=${config.clientId}&client_secret=${config.clientSecret}&grant_type=client_credentials`);
+    const { data } = await axios.post(
+      `https://id.twitch.tv/oauth2/token?client_id=${config.clientId}&client_secret=${config.clientSecret}&grant_type=client_credentials`
+    );
     console.log(data);
-    
+
     axios.defaults.headers.common.Authorization = null;
-
-
-    
-
   } else {
     axios.defaults.headers.common.Authorization = `Bearer ${authToken}`;
   }

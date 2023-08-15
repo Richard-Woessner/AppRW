@@ -4,15 +4,20 @@ import { useEffect, useState } from 'react';
 import { signin, signup } from '../../src/helpers/firebase';
 import { UserCredential } from 'firebase/auth';
 import { Button as ButtonElement, Input, Icon, Tab, TabView } from '@rneui/themed';
-import { DisplayAlert } from '../../src/helpers/func';
+import { DisplayAlert, validateSignIn, validateSignUp } from '../../src/helpers/func';
+import { useKeyboardVisible } from '../../src/hooks/useKeyboard';
+import { UseAuth } from '../../src/providers/authProvider';
 
 export interface LoginProps {
   generalState: GeneralState;
   setGeneralState: (g: GeneralState) => void;
+  user: User;
+  setUser: (user: User) => void;
 }
 
 export const Login = (props: LoginProps) => {
-  const { generalState, setGeneralState } = props;
+  const authProvider = UseAuth();
+  const { generalState, setGeneralState, user, setUser } = props;
   const [index, setIndex] = useState(0);
   const [signInForm, setSignInForm] = useState<SignInForm>({
     email: '',
@@ -39,93 +44,33 @@ export const Login = (props: LoginProps) => {
     });
   };
 
-  const setUser = (user: User) => {
-    console.log('set user');
-    console.log(user);
-
-    setGeneralState({
-      ...generalState,
-      user,
-    });
-  };
-
   const signUp = () => {
     const { email, password, confirmPassword } = signUpForm;
 
-    if (!email || !password || !confirmPassword) {
-      console.log('missing fields');
-      DisplayAlert({ title: 'Missing fields' });
+    if (!validateSignUp(email, password, confirmPassword)) {
       return;
     }
 
-    if (password !== confirmPassword) {
-      console.log('passwords do not match');
-      DisplayAlert({ title: 'Passwords do not match' });
+    authProvider.signUp(email, password).then((user) => {
+      console.log(user);
 
-      return;
-    }
-
-    signup(email, password)
-      .then((user: UserCredential) => {
-        console.log('user signed up');
-
-        const u = user.user as unknown as User;
-        setUser({
-          accessToken: u.accessToken,
-          displayName: u.displayName,
-          email: u.email,
-        });
-
-        DisplayAlert({ title: 'Thank you for signing up!' });
-      })
-      .catch((err) => {
-        console.log(err);
-        DisplayAlert({
-          title: 'Error signing up',
-          message: 'Make sure you have the correct email and password',
-        });
-      });
+      DisplayAlert({ title: `Hello ${user.displayName}`, onConfirm: redirectHome });
+    });
   };
 
   const signIn = () => {
     const { email, password } = signInForm;
 
-    if (!email || !password) {
-      console.log('missing fields');
-      DisplayAlert({ title: 'Missing fields' });
+    if (!validateSignIn(email, password)) {
       return;
     }
 
-    signin(email, password)
-      .then((user: UserCredential) => {
-        console.log('user signed in');
-        console.log(user);
+    authProvider.login(email, password).then((user) => {
+      console.log(user);
 
-        const u = user.user;
-        setUser({
-          accessToken: u.accessToken,
-          displayName: u.displayName,
-          email: u.email,
-        });
-
-        const name = user.user.displayName ? user.user.displayName : user.user.email.split('@')[0];
-
-        DisplayAlert({ title: `Hello ${name}`, onConfirm: redirectHome });
-        closeMenu();
-      })
-      .catch(() => {
-        DisplayAlert({
-          title: 'Error signing in',
-          message: 'Make sure you have the correct email and password',
-        });
-      });
+      DisplayAlert({ title: `Hello ${user.displayName}`, onConfirm: redirectHome });
+    });
   };
-
-  useEffect(() => {
-    if (generalState.user) {
-      return;
-    }
-  }, []);
 
   return (
     <>

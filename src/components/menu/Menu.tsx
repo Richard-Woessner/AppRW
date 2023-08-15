@@ -1,6 +1,7 @@
 import { View, StyleSheet, Text, Pressable, BackHandler } from 'react-native';
 import { GeneralState } from '../../models/models';
 import { Link } from 'expo-router';
+import { UseAuth } from '../../providers/authProvider';
 
 interface MenuProps {
   generalState: GeneralState;
@@ -8,8 +9,13 @@ interface MenuProps {
 }
 
 export const Menu = (props: MenuProps) => {
+  const authProvider = UseAuth();
   const { generalState, setGeneralState } = props;
-  const { getData } = generalState;
+  const { getData, isKeyboardOpen } = generalState;
+
+  const menuOpen = generalState.menuOpen && !isKeyboardOpen;
+
+  const signedIn = authProvider.user !== undefined;
 
   const openLogin = () => {
     console.log('open login');
@@ -23,13 +29,10 @@ export const Menu = (props: MenuProps) => {
 
   return (
     <>
-      {generalState.menuOpen && (
+      {menuOpen && (
         <View style={styles.container}>
-          <MenuRow text="test" />
-          <MenuRow text="test" />
-          <MenuRow text="test" />
           <MenuRow text="Home" onPress={openHome} />
-          <MenuRow text="Login" onPress={openLogin} />
+          {!signedIn && <MenuRow text="Login" onPress={openLogin} />}
           <MenuRow text="Refresh" onPress={getData} />
         </View>
       )}

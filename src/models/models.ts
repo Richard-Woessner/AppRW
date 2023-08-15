@@ -11,8 +11,8 @@ export interface GeneralState {
   };
   menuOpen: boolean;
   getData: () => Promise<void> | undefined;
-  posts: Post[];
   user?: User;
+  isKeyboardOpen: boolean;
 }
 
 export interface User {
@@ -28,4 +28,6 @@ export interface Post {
   body: string;
   rating: number;
   game: string;
+  date: Date | undefined;
+  sortDate?: number;
 }

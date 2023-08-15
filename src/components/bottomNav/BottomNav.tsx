@@ -1,5 +1,6 @@
 import { View, StyleSheet, Button } from 'react-native';
 import { GeneralState } from '../../models/models';
+import { useKeyboardVisible } from '../../hooks/useKeyboard';
 
 interface BottomNavProps {
   generalState: GeneralState;
@@ -8,6 +9,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav = (props: BottomNavProps) => {
+  const isKeyboardOpen = useKeyboardVisible();
   const { generalState, setGeneralState } = props;
   const styles = StyleSheet.create({
     container: {
@@ -29,8 +31,6 @@ export const BottomNav = (props: BottomNavProps) => {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      borderWidth: 1,
-      borderColor: '#000',
     },
   });
 
@@ -40,15 +40,17 @@ export const BottomNav = (props: BottomNavProps) => {
     setGeneralState({ ...generalState, menuOpen: true });
   };
 
+  if (isKeyboardOpen) {
+    return <></>;
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
         <Button title="menu" onPress={() => setMenuOpen()} />
       </View>
       <View style={styles.buttonContainer}></View>
-      <View style={styles.buttonContainer}>
-        <Button title="test" onPress={() => console.log('test')} />
-      </View>
+      <View style={styles.buttonContainer}></View>
       <View style={styles.buttonContainer}></View>
       <View style={styles.buttonContainer}></View>
     </View>
